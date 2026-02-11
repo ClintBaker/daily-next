@@ -6,7 +6,6 @@ import { ThemeProvider } from "next-themes";
 export default function AuthProvider({ children }) {
   const domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN;
   const clientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID;
-  const audience = process.env.NEXT_PUBLIC_AUTH0_AUDIENCE;
 
   if (!domain || !clientId) {
     return (
@@ -23,7 +22,6 @@ export default function AuthProvider({ children }) {
         clientId={clientId}
         authorizationParams={{
           redirect_uri: typeof window !== "undefined" ? window.location.origin : undefined,
-          audience,
         }}
         cacheLocation="localstorage"
         useRefreshTokens

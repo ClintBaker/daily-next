@@ -16,7 +16,9 @@ export const metadata = {
   title: "Dayman",
   description: "Dashboard and recurring workflows rebuilt with Next.js",
   icons: {
-    icon: "/dayman-original.png",
+    icon: "/dayman-original.png?v=2",
+    shortcut: "/dayman-original.png?v=2",
+    apple: "/dayman-original.png?v=2",
   },
 };
 
