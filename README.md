@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Daily Next
 
-## Getting Started
+`daily-next` is a Next.js rebuild of the original `daily` app with a refreshed UI.
 
-First, run the development server:
+Core workflows included:
+- Todos (`/dashboard`)
+- Recurring items (`/recurring`)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Removed from the original app:
+- Insights
+- Capture
+- Grind
+
+## Tech stack
+
+- Next.js (App Router)
+- React
+- Tailwind CSS v4
+- MongoDB + Mongoose
+- Auth0 (`@auth0/auth0-react`)
+- Theming with `next-themes` + tweakcn token sets
+
+## Features
+
+- Todo CRUD (create, edit, complete/uncomplete, delete)
+- Recurring CRUD (create, edit, snooze, delete)
+- Add recurring items to todos
+- Responsive recurring view (grid on desktop, cards on mobile)
+- Auth0 login and user-scoped API data via `x-user-id` header
+- Style theme selector (Catppuccin, Cyberpunk, Retro Arcade)
+- Light/Dark mode toggle
+
+## Environment setup
+
+1. Copy `.env.example` to `.env.local`
+2. Fill in your real values
+
+Required variables:
+
+```env
+MONGODB_ATLAS_CONNECTION_STRING=your_mongodb_connection_string
+NEXT_PUBLIC_AUTH0_DOMAIN=your_auth0_domain
+NEXT_PUBLIC_AUTH0_CLIENT_ID=your_auth0_spa_client_id
+NEXT_PUBLIC_AUTH0_AUDIENCE=your_auth0_api_audience
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local development
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Install dependencies and start dev server:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+App runs on `http://localhost:5173` (configured in `package.json`).
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` - start local dev server on port 5173
+- `npm run lint` - run ESLint
+- `npm run build` - production build
+- `npm run start` - run production server
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API routes
 
-## Deploy on Vercel
+- `GET/POST /api/todos`
+- `PUT/DELETE /api/todos/:id`
+- `GET/POST /api/processes`
+- `PUT/DELETE /api/processes/:id`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Data model notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Todos: `name`, `points` (displayed as Priority in UI), `description`, `hyperlink`, `completedAt`
+- Recurring: `name`, `points` (displayed as Priority in UI), `description`, `hyperlink`, `cadence`, `lastComplete`
+- Recurring status is derived from cadence + days since `lastComplete`
+- `Add to todos` updates recurring `lastComplete`
+
+## GitHub readiness checklist
+
+- [x] `.env.local` is ignored by `.gitignore`
+- [x] `.env.example` is included for safe onboarding
+- [ ] Run `npm run lint`
+- [ ] Run `npm run build`
+- [ ] Review `git status`
+- [ ] Commit and push to a new GitHub repository
+
+Example first push:
+
+```bash
+git init
+git add .
+git commit -m "Initial Next.js migration of daily app"
+git branch -M main
+git remote add origin <your-github-repo-url>
+git push -u origin main
+```
