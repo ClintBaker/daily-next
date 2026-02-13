@@ -513,41 +513,65 @@ export default function DashboardPage() {
       >
         {selectedTodo && (
           <div className="space-y-3">
-            <input
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-              value={selectedTodo.name}
-              onChange={(event) =>
-                setSelectedTodo((prev) => ({ ...prev, name: event.target.value }))
-              }
-            />
-            <input
-              type="number"
-              min={1}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-              value={selectedTodo.points}
-              onChange={(event) =>
-                setSelectedTodo((prev) => ({ ...prev, points: event.target.value }))
-              }
-            />
-            <textarea
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-              value={selectedTodo.description || ""}
-              onChange={(event) =>
-                setSelectedTodo((prev) => ({
-                  ...prev,
-                  description: event.target.value,
-                }))
-              }
-              placeholder="Description"
-            />
-            <input
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-              value={selectedTodo.hyperlink || ""}
-              onChange={(event) =>
-                setSelectedTodo((prev) => ({ ...prev, hyperlink: event.target.value }))
-              }
-              placeholder="Hyperlink"
-            />
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-name">
+                Name
+              </label>
+              <input
+                id="edit-todo-name"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+                value={selectedTodo.name}
+                onChange={(event) =>
+                  setSelectedTodo((prev) => ({ ...prev, name: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-priority">
+                Priority
+              </label>
+              <input
+                id="edit-todo-priority"
+                type="number"
+                min={1}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+                value={selectedTodo.points}
+                onChange={(event) =>
+                  setSelectedTodo((prev) => ({ ...prev, points: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-description">
+                Description
+              </label>
+              <textarea
+                id="edit-todo-description"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+                value={selectedTodo.description || ""}
+                onChange={(event) =>
+                  setSelectedTodo((prev) => ({
+                    ...prev,
+                    description: event.target.value,
+                  }))
+                }
+                placeholder="Description"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-hyperlink">
+                Hyperlink
+              </label>
+              <input
+                id="edit-todo-hyperlink"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+                value={selectedTodo.hyperlink || ""}
+                onChange={(event) =>
+                  setSelectedTodo((prev) => ({ ...prev, hyperlink: event.target.value }))
+                }
+                placeholder="Hyperlink"
+              />
+            </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <button
                 onClick={handleUpdateTodo}
@@ -563,28 +587,28 @@ export default function DashboardPage() {
               >
                 Delete
               </button>
-              <button
-                onClick={handleCompleteTodo}
-                type="button"
-                className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90"
-              >
-                Complete
-              </button>
-            </div>
-            {selectedTodo.hyperlink && (
-              <a
-                href={selectedTodo.hyperlink}
-                target="_blank"
-                rel="noreferrer"
-                className="block rounded-lg bg-secondary px-3 py-2 text-center text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
-                aria-label="Open todo hyperlink"
-                title="Open link"
-              >
-                <span className="inline-flex items-center justify-center">
+              {selectedTodo.hyperlink ? (
+                <a
+                  href={selectedTodo.hyperlink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center rounded-lg bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
+                  aria-label="Open todo hyperlink"
+                  title="Open link"
+                >
                   <ExternalLink className="h-4 w-4" />
-                </span>
-              </a>
-            )}
+                </a>
+              ) : (
+                <div className="hidden sm:block" />
+              )}
+            </div>
+            <button
+              onClick={handleCompleteTodo}
+              type="button"
+              className="w-full rounded-xl bg-emerald-500 px-4 py-4 text-base font-semibold text-slate-950 hover:bg-emerald-400"
+            >
+              Complete
+            </button>
           </div>
         )}
       </Modal>
@@ -597,36 +621,63 @@ export default function DashboardPage() {
       >
         {selectedCompletedTodo && (
           <div className="space-y-3">
-            <input
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-              value={selectedCompletedTodo.name}
-              onChange={(event) =>
-                setSelectedCompletedTodo((prev) => ({ ...prev, name: event.target.value }))
-              }
-            />
-            <input
-              type="number"
-              min={1}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-              value={selectedCompletedTodo.points}
-              onChange={(event) =>
-                setSelectedCompletedTodo((prev) => ({
-                  ...prev,
-                  points: event.target.value,
-                }))
-              }
-            />
-            <input
-              type="date"
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-              value={toInputDate(selectedCompletedTodo.completedAt)}
-              onChange={(event) =>
-                setSelectedCompletedTodo((prev) => ({
-                  ...prev,
-                  completedAt: new Date(event.target.value).toISOString(),
-                }))
-              }
-            />
+            <div>
+              <label
+                className="mb-1 block text-sm font-medium text-foreground"
+                htmlFor="edit-completed-todo-name"
+              >
+                Name
+              </label>
+              <input
+                id="edit-completed-todo-name"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+                value={selectedCompletedTodo.name}
+                onChange={(event) =>
+                  setSelectedCompletedTodo((prev) => ({ ...prev, name: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label
+                className="mb-1 block text-sm font-medium text-foreground"
+                htmlFor="edit-completed-todo-priority"
+              >
+                Priority
+              </label>
+              <input
+                id="edit-completed-todo-priority"
+                type="number"
+                min={1}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+                value={selectedCompletedTodo.points}
+                onChange={(event) =>
+                  setSelectedCompletedTodo((prev) => ({
+                    ...prev,
+                    points: event.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <label
+                className="mb-1 block text-sm font-medium text-foreground"
+                htmlFor="edit-completed-todo-date"
+              >
+                Completed date
+              </label>
+              <input
+                id="edit-completed-todo-date"
+                type="date"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+                value={toInputDate(selectedCompletedTodo.completedAt)}
+                onChange={(event) =>
+                  setSelectedCompletedTodo((prev) => ({
+                    ...prev,
+                    completedAt: new Date(event.target.value).toISOString(),
+                  }))
+                }
+              />
+            </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 onClick={handleUpdateCompletedTodo}
