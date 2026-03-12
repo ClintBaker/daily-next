@@ -1,13 +1,18 @@
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+function getLocalCalendarDayStamp(value) {
+  const date = new Date(value);
+
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 export function getRecurringStatus(item) {
   const today = new Date();
-  const lastComplete = new Date(item.lastComplete);
-  today.setHours(0, 0, 0, 0);
-  lastComplete.setHours(0, 0, 0, 0);
-
   const daysSinceComplete =
-    (today.getTime() - lastComplete.getTime()) / (1000 * 60 * 60 * 24);
-  const dueIn = Math.round(item.cadence - daysSinceComplete);
-  const status = daysSinceComplete >= item.cadence ? "Overdue" : "Up to date";
+    (getLocalCalendarDayStamp(today) - getLocalCalendarDayStamp(item.lastComplete)) /
+    MS_PER_DAY;
+  const dueIn = Number(item.cadence) - daysSinceComplete;
+  const status = dueIn <= 0 ? "Overdue" : "Up to date";
 
   return { dueIn, status };
 }

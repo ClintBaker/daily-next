@@ -1,65 +1,66 @@
-"use client";
+'use client'
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import AppShell from "@/components/AppShell";
-import { useAuth0 } from "@auth0/auth0-react";
-import Modal from "@/components/Modal";
-import { ExternalLink, RotateCw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import AppShell from '@/components/AppShell'
+import { useAuth0 } from '@auth0/auth0-react'
+import Modal from '@/components/Modal'
+import { ExternalLink, RotateCw } from 'lucide-react'
 
 const initialTodoForm = {
-  name: "",
+  name: '',
   points: 60,
-  description: "",
-  hyperlink: "",
-};
+  description: '',
+  hyperlink: '',
+}
 
 function toInputDate(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  return date.toISOString().slice(0, 10);
+  if (!value) return ''
+  const date = new Date(value)
+  return date.toISOString().slice(0, 10)
 }
 
 export default function DashboardPage() {
-  const { user, isAuthenticated } = useAuth0();
-  const userSub = user?.sub;
-  const [incompleteTodos, setIncompleteTodos] = useState([]);
-  const [completedTodos, setCompletedTodos] = useState([]);
-  const [todoForm, setTodoForm] = useState(initialTodoForm);
-  const [isCreateTodoModalOpen, setIsCreateTodoModalOpen] = useState(false);
-  const [selectedTodo, setSelectedTodo] = useState(null);
-  const [selectedCompletedTodo, setSelectedCompletedTodo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const { user, isAuthenticated } = useAuth0()
+  const userSub = user?.sub
+  const [incompleteTodos, setIncompleteTodos] = useState([])
+  const [completedTodos, setCompletedTodos] = useState([])
+  const [todoForm, setTodoForm] = useState(initialTodoForm)
+  const [isCreateTodoModalOpen, setIsCreateTodoModalOpen] = useState(false)
+  const [selectedTodo, setSelectedTodo] = useState(null)
+  const [selectedCompletedTodo, setSelectedCompletedTodo] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const sortedIncompleteTodos = useMemo(
     () =>
       [...incompleteTodos].sort((a, b) => {
         if (a.points === b.points) {
-          return new Date(a.createdAt) - new Date(b.createdAt);
+          return new Date(a.createdAt) - new Date(b.createdAt)
         }
-        return a.points - b.points;
+        return a.points - b.points
       }),
-    [incompleteTodos]
-  );
+    [incompleteTodos],
+  )
 
   const sortedCompletedTodos = useMemo(
     () =>
       [...completedTodos].sort(
-        (a, b) => new Date(a.completedAt) - new Date(b.completedAt)
+        (a, b) => new Date(a.completedAt) - new Date(b.completedAt),
       ),
-    [completedTodos]
-  );
+    [completedTodos],
+  )
 
   const activeTodo = useMemo(
     () => (sortedIncompleteTodos.length > 0 ? sortedIncompleteTodos[0] : null),
-    [sortedIncompleteTodos]
-  );
+    [sortedIncompleteTodos],
+  )
 
   const pointsToday = useMemo(
-    () => completedTodos.reduce((acc, todo) => acc + Number(todo.points || 0), 0),
-    [completedTodos]
-  );
+    () =>
+      completedTodos.reduce((acc, todo) => acc + Number(todo.points || 0), 0),
+    [completedTodos],
+  )
 
   const apiFetch = useCallback(
     (url, options = {}) => {
@@ -67,203 +68,215 @@ export default function DashboardPage() {
         ...options,
         headers: {
           ...(options.headers || {}),
-          ...(userSub ? { "x-user-id": userSub } : {}),
+          ...(userSub ? { 'x-user-id': userSub } : {}),
         },
-        cache: "no-store",
-      });
+        cache: 'no-store',
+      })
     },
-    [userSub]
-  );
+    [userSub],
+  )
 
   const fetchTodos = useCallback(async () => {
-    setError("");
-    setLoading(true);
+    setError('')
+    setLoading(true)
     try {
-      const today = new Date();
+      const today = new Date()
       const [incompleteRes, completedRes] = await Promise.all([
-        apiFetch("/api/todos?status=incomplete"),
-        apiFetch(`/api/todos?startDate=${today.toISOString()}&endDate=${today.toISOString()}`),
-      ]);
+        apiFetch('/api/todos?status=incomplete'),
+        apiFetch(
+          `/api/todos?startDate=${today.toISOString()}&endDate=${today.toISOString()}`,
+        ),
+      ])
 
       if (!incompleteRes.ok || !completedRes.ok) {
-        throw new Error("Failed to load dashboard data.");
+        throw new Error('Failed to load dashboard data.')
       }
 
       const [incompleteData, completedData] = await Promise.all([
         incompleteRes.json(),
         completedRes.json(),
-      ]);
+      ])
 
-      setIncompleteTodos(incompleteData);
-      setCompletedTodos(completedData);
+      setIncompleteTodos(incompleteData)
+      setCompletedTodos(completedData)
     } catch (fetchError) {
-      setError("Unable to load todos.");
+      setError('Unable to load todos.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [apiFetch]);
+  }, [apiFetch])
 
   useEffect(() => {
     if (isAuthenticated && userSub) {
-      fetchTodos();
+      fetchTodos()
     }
-  }, [isAuthenticated, userSub, fetchTodos]);
+  }, [isAuthenticated, userSub, fetchTodos])
 
   const handleCreateTodo = async (event) => {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
+    event.preventDefault()
+    setSaving(true)
+    setError('')
     try {
       const payload = {
         ...todoForm,
         points: Number(todoForm.points),
         hyperlink: todoForm.hyperlink.trim() || null,
-      };
-
-      const response = await apiFetch("/api/todos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create todo");
       }
 
-      const created = await response.json();
-      setIncompleteTodos((prev) => [...prev, created]);
-      setTodoForm(initialTodoForm);
-      setIsCreateTodoModalOpen(false);
+      const response = await apiFetch('/api/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create todo')
+      }
+
+      const created = await response.json()
+      setIncompleteTodos((prev) => [...prev, created])
+      setTodoForm(initialTodoForm)
+      setIsCreateTodoModalOpen(false)
     } catch (saveError) {
-      setError("Unable to create todo.");
+      setError('Unable to create todo.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleUpdateTodo = async () => {
-    if (!selectedTodo) return;
-    setSaving(true);
-    setError("");
+    if (!selectedTodo) return
+    setSaving(true)
+    setError('')
     try {
       const updates = {
         name: selectedTodo.name,
         points: Number(selectedTodo.points),
-        description: selectedTodo.description || "",
+        description: selectedTodo.description || '',
         hyperlink: selectedTodo.hyperlink?.trim() || null,
-      };
+      }
 
       const response = await apiFetch(`/api/todos/${selectedTodo._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
-      });
-      if (!response.ok) throw new Error("Failed to update");
+      })
+      if (!response.ok) throw new Error('Failed to update')
 
-      const updated = await response.json();
+      const updated = await response.json()
       setIncompleteTodos((prev) =>
-        prev.map((todo) => (todo._id === updated._id ? updated : todo))
-      );
-      setSelectedTodo(null);
+        prev.map((todo) => (todo._id === updated._id ? updated : todo)),
+      )
+      setSelectedTodo(null)
     } catch (saveError) {
-      setError("Unable to update todo.");
+      setError('Unable to update todo.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleDeleteTodo = async () => {
-    if (!selectedTodo) return;
-    setSaving(true);
-    setError("");
+    if (!selectedTodo) return
+    setSaving(true)
+    setError('')
     try {
       const response = await apiFetch(`/api/todos/${selectedTodo._id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete");
+        method: 'DELETE',
+      })
+      if (!response.ok) throw new Error('Failed to delete')
 
-      setIncompleteTodos((prev) => prev.filter((todo) => todo._id !== selectedTodo._id));
-      setSelectedTodo(null);
+      setIncompleteTodos((prev) =>
+        prev.filter((todo) => todo._id !== selectedTodo._id),
+      )
+      setSelectedTodo(null)
     } catch (saveError) {
-      setError("Unable to delete todo.");
+      setError('Unable to delete todo.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleCompleteTodo = async () => {
-    if (!selectedTodo) return;
-    setSaving(true);
-    setError("");
+    if (!selectedTodo) return
+    setSaving(true)
+    setError('')
     try {
       const response = await apiFetch(`/api/todos/${selectedTodo._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ completedAt: new Date().toISOString() }),
-      });
-      if (!response.ok) throw new Error("Failed to complete");
+      })
+      if (!response.ok) throw new Error('Failed to complete')
 
-      const updated = await response.json();
-      setIncompleteTodos((prev) => prev.filter((todo) => todo._id !== updated._id));
-      setCompletedTodos((prev) => [...prev, updated]);
-      setSelectedTodo(null);
+      const updated = await response.json()
+      setIncompleteTodos((prev) =>
+        prev.filter((todo) => todo._id !== updated._id),
+      )
+      setCompletedTodos((prev) => [...prev, updated])
+      setSelectedTodo(null)
     } catch (saveError) {
-      setError("Unable to complete todo.");
+      setError('Unable to complete todo.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleUpdateCompletedTodo = async () => {
-    if (!selectedCompletedTodo) return;
-    setSaving(true);
-    setError("");
+    if (!selectedCompletedTodo) return
+    setSaving(true)
+    setError('')
     try {
       const updates = {
         name: selectedCompletedTodo.name,
         points: Number(selectedCompletedTodo.points),
         completedAt: selectedCompletedTodo.completedAt,
-      };
+      }
 
-      const response = await apiFetch(`/api/todos/${selectedCompletedTodo._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) throw new Error("Failed to update");
+      const response = await apiFetch(
+        `/api/todos/${selectedCompletedTodo._id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates),
+        },
+      )
+      if (!response.ok) throw new Error('Failed to update')
 
-      const updated = await response.json();
+      const updated = await response.json()
       setCompletedTodos((prev) =>
-        prev.map((todo) => (todo._id === updated._id ? updated : todo))
-      );
-      setSelectedCompletedTodo(null);
+        prev.map((todo) => (todo._id === updated._id ? updated : todo)),
+      )
+      setSelectedCompletedTodo(null)
     } catch (saveError) {
-      setError("Unable to update completed todo.");
+      setError('Unable to update completed todo.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleDeleteCompletedTodo = async () => {
-    if (!selectedCompletedTodo) return;
-    setSaving(true);
-    setError("");
+    if (!selectedCompletedTodo) return
+    setSaving(true)
+    setError('')
     try {
-      const response = await apiFetch(`/api/todos/${selectedCompletedTodo._id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete");
+      const response = await apiFetch(
+        `/api/todos/${selectedCompletedTodo._id}`,
+        {
+          method: 'DELETE',
+        },
+      )
+      if (!response.ok) throw new Error('Failed to delete')
 
       setCompletedTodos((prev) =>
-        prev.filter((todo) => todo._id !== selectedCompletedTodo._id)
-      );
-      setSelectedCompletedTodo(null);
+        prev.filter((todo) => todo._id !== selectedCompletedTodo._id),
+      )
+      setSelectedCompletedTodo(null)
     } catch (saveError) {
-      setError("Unable to delete completed todo.");
+      setError('Unable to delete completed todo.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   return (
     <AppShell>
@@ -274,7 +287,9 @@ export default function DashboardPage() {
               Active todo
             </p>
             {loading ? (
-              <p className="text-sm text-muted-foreground">Loading active todo...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading active todo...
+              </p>
             ) : activeTodo ? (
               <div className="flex items-start justify-between gap-3">
                 <button
@@ -302,7 +317,9 @@ export default function DashboardPage() {
                 )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No active todo right now.</p>
+              <p className="text-sm text-muted-foreground">
+                No active todo right now.
+              </p>
             )}
           </div>
 
@@ -342,15 +359,17 @@ export default function DashboardPage() {
                     onClick={() => setSelectedTodo({ ...todo })}
                     className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left ${
                       selectedTodo?._id === todo._id
-                        ? "border-primary/40 bg-primary/10"
-                        : "border-border hover:border-primary/30 hover:bg-primary/5"
+                        ? 'border-primary/40 bg-primary/10'
+                        : 'border-border hover:border-primary/30 hover:bg-primary/5'
                     }`}
                     type="button"
                   >
                     <span className="w-8 text-sm font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
-                    <span className="flex-1 font-medium text-foreground">{todo.name}</span>
+                    <span className="flex-1 font-medium text-foreground">
+                      {todo.name}
+                    </span>
                     {todo.hyperlink && (
                       <a
                         href={todo.hyperlink}
@@ -378,9 +397,13 @@ export default function DashboardPage() {
               Completed: {completedTodos.length}
             </h2>
             {loading ? (
-              <p className="text-muted-foreground">Loading completed todos...</p>
+              <p className="text-muted-foreground">
+                Loading completed todos...
+              </p>
             ) : sortedCompletedTodos.length === 0 ? (
-              <p className="text-muted-foreground">Nothing completed yet today.</p>
+              <p className="text-muted-foreground">
+                Nothing completed yet today.
+              </p>
             ) : (
               <div className="space-y-2">
                 {sortedCompletedTodos.map((todo, index) => (
@@ -389,15 +412,17 @@ export default function DashboardPage() {
                     onClick={() => setSelectedCompletedTodo({ ...todo })}
                     className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left ${
                       selectedCompletedTodo?._id === todo._id
-                        ? "border-accent bg-accent/20"
-                        : "border-border hover:border-accent hover:bg-accent/10"
+                        ? 'border-accent bg-accent/20'
+                        : 'border-border hover:border-accent hover:bg-accent/10'
                     }`}
                     type="button"
                   >
                     <span className="w-8 text-sm font-semibold text-muted-foreground">
                       {index + 1}
                     </span>
-                    <span className="flex-1 font-medium text-foreground">{todo.name}</span>
+                    <span className="flex-1 font-medium text-foreground">
+                      {todo.name}
+                    </span>
                     {todo.hyperlink && (
                       <a
                         href={todo.hyperlink}
@@ -436,12 +461,16 @@ export default function DashboardPage() {
       >
         <form className="space-y-3" onSubmit={handleCreateTodo}>
           <div>
-            <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="name">
+            <label
+              className="mb-1 block text-sm font-medium text-foreground"
+              htmlFor="name"
+            >
               Name
             </label>
             <input
               id="name"
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
+              autoFocus
               value={todoForm.name}
               onChange={(event) =>
                 setTodoForm((prev) => ({ ...prev, name: event.target.value }))
@@ -451,7 +480,10 @@ export default function DashboardPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="priority">
+            <label
+              className="mb-1 block text-sm font-medium text-foreground"
+              htmlFor="priority"
+            >
               Priority
             </label>
             <input
@@ -478,12 +510,18 @@ export default function DashboardPage() {
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
               value={todoForm.description}
               onChange={(event) =>
-                setTodoForm((prev) => ({ ...prev, description: event.target.value }))
+                setTodoForm((prev) => ({
+                  ...prev,
+                  description: event.target.value,
+                }))
               }
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="hyperlink">
+            <label
+              className="mb-1 block text-sm font-medium text-foreground"
+              htmlFor="hyperlink"
+            >
               Hyperlink (optional)
             </label>
             <input
@@ -491,7 +529,10 @@ export default function DashboardPage() {
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
               value={todoForm.hyperlink}
               onChange={(event) =>
-                setTodoForm((prev) => ({ ...prev, hyperlink: event.target.value }))
+                setTodoForm((prev) => ({
+                  ...prev,
+                  hyperlink: event.target.value,
+                }))
               }
             />
           </div>
@@ -500,7 +541,7 @@ export default function DashboardPage() {
             disabled={saving}
             className="w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-muted"
           >
-            {saving ? "Saving..." : "Create todo"}
+            {saving ? 'Saving...' : 'Create todo'}
           </button>
         </form>
       </Modal>
@@ -514,7 +555,10 @@ export default function DashboardPage() {
         {selectedTodo && (
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-name">
+              <label
+                className="mb-1 block text-sm font-medium text-foreground"
+                htmlFor="edit-todo-name"
+              >
                 Name
               </label>
               <input
@@ -522,12 +566,18 @@ export default function DashboardPage() {
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
                 value={selectedTodo.name}
                 onChange={(event) =>
-                  setSelectedTodo((prev) => ({ ...prev, name: event.target.value }))
+                  setSelectedTodo((prev) => ({
+                    ...prev,
+                    name: event.target.value,
+                  }))
                 }
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-priority">
+              <label
+                className="mb-1 block text-sm font-medium text-foreground"
+                htmlFor="edit-todo-priority"
+              >
                 Priority
               </label>
               <input
@@ -537,18 +587,24 @@ export default function DashboardPage() {
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
                 value={selectedTodo.points}
                 onChange={(event) =>
-                  setSelectedTodo((prev) => ({ ...prev, points: event.target.value }))
+                  setSelectedTodo((prev) => ({
+                    ...prev,
+                    points: event.target.value,
+                  }))
                 }
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-description">
+              <label
+                className="mb-1 block text-sm font-medium text-foreground"
+                htmlFor="edit-todo-description"
+              >
                 Description
               </label>
               <textarea
                 id="edit-todo-description"
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-                value={selectedTodo.description || ""}
+                value={selectedTodo.description || ''}
                 onChange={(event) =>
                   setSelectedTodo((prev) => ({
                     ...prev,
@@ -559,15 +615,21 @@ export default function DashboardPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground" htmlFor="edit-todo-hyperlink">
+              <label
+                className="mb-1 block text-sm font-medium text-foreground"
+                htmlFor="edit-todo-hyperlink"
+              >
                 Hyperlink
               </label>
               <input
                 id="edit-todo-hyperlink"
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
-                value={selectedTodo.hyperlink || ""}
+                value={selectedTodo.hyperlink || ''}
                 onChange={(event) =>
-                  setSelectedTodo((prev) => ({ ...prev, hyperlink: event.target.value }))
+                  setSelectedTodo((prev) => ({
+                    ...prev,
+                    hyperlink: event.target.value,
+                  }))
                 }
                 placeholder="Hyperlink"
               />
@@ -633,7 +695,10 @@ export default function DashboardPage() {
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground outline-none focus:border-ring"
                 value={selectedCompletedTodo.name}
                 onChange={(event) =>
-                  setSelectedCompletedTodo((prev) => ({ ...prev, name: event.target.value }))
+                  setSelectedCompletedTodo((prev) => ({
+                    ...prev,
+                    name: event.target.value,
+                  }))
                 }
               />
             </div>
@@ -698,5 +763,5 @@ export default function DashboardPage() {
         )}
       </Modal>
     </AppShell>
-  );
+  )
 }

@@ -1,58 +1,56 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useAuth0 } from "@auth0/auth0-react";
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useAuth0 } from '@auth0/auth0-react'
+import { Moon, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 const navItems = [
-  { href: "/dashboard", label: "Todos" },
-  { href: "/recurring", label: "Recurring" },
-];
+  { href: '/dashboard', label: 'Todos' },
+  { href: '/recurring', label: 'Recurring' },
+]
 
 const STYLE_THEME_CLASS = {
   catppuccin: null,
-  cyberpunk: "theme-cyberpunk",
-  "retro-arcade": "theme-retro-arcade",
-};
+  cyberpunk: 'theme-cyberpunk',
+  'retro-arcade': 'theme-retro-arcade',
+}
 
 export default function AppShell({ children }) {
-  const pathname = usePathname();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const pathname = usePathname()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const [styleTheme, setStyleTheme] = useState(() => {
-    if (typeof window === "undefined") return "catppuccin";
-    return window.localStorage.getItem("styleTheme") || "catppuccin";
-  });
-  const {
-    isAuthenticated,
-    isLoading,
-    user,
-    loginWithRedirect,
-    logout,
-  } = useAuth0();
+    if (typeof window === 'undefined') return 'catppuccin'
+    return window.localStorage.getItem('styleTheme') || 'catppuccin'
+  })
+  const { isAuthenticated, isLoading, user, loginWithRedirect, logout } =
+    useAuth0()
 
   useEffect(() => {
-    window.localStorage.setItem("styleTheme", styleTheme);
-    document.documentElement.classList.remove("theme-cyberpunk", "theme-retro-arcade");
-    const nextClass = STYLE_THEME_CLASS[styleTheme];
+    window.localStorage.setItem('styleTheme', styleTheme)
+    document.documentElement.classList.remove(
+      'theme-cyberpunk',
+      'theme-retro-arcade',
+    )
+    const nextClass = STYLE_THEME_CLASS[styleTheme]
     if (nextClass) {
-      document.documentElement.classList.add(nextClass);
+      document.documentElement.classList.add(nextClass)
     }
-  }, [styleTheme]);
+  }, [styleTheme])
 
   const handleStyleThemeChange = (nextTheme) => {
-    setStyleTheme(nextTheme);
-  };
+    setStyleTheme(nextTheme)
+  }
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">Loading account...</p>
       </div>
-    );
+    )
   }
 
   if (!isAuthenticated) {
@@ -62,9 +60,12 @@ export default function AppShell({ children }) {
           <p className="mb-2 text-sm font-medium uppercase tracking-wide text-primary">
             Daily Next
           </p>
-          <h1 className="mb-2 text-2xl font-semibold text-foreground">Sign in to continue</h1>
+          <h1 className="mb-2 text-2xl font-semibold text-foreground">
+            Sign in to continue
+          </h1>
           <p className="mb-6 text-sm text-muted-foreground">
-            This app now uses Auth0 user identity for your dashboard and recurring data.
+            This app now uses Auth0 user identity for your dashboard and
+            recurring data.
           </p>
           <button
             type="button"
@@ -75,7 +76,7 @@ export default function AppShell({ children }) {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -99,20 +100,20 @@ export default function AppShell({ children }) {
 
           <nav className="flex flex-wrap justify-center gap-4 justify-self-center">
             {navItems.map((item) => {
-              const active = pathname === item.href;
+              const active = pathname === item.href
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`border-b-2 px-1 py-1.5 text-sm font-semibold transition ${
                     active
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                      ? 'border-primary text-foreground'
+                      : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
                   }`}
                 >
                   {item.label}
                 </Link>
-              );
+              )
             })}
           </nav>
 
@@ -131,13 +132,13 @@ export default function AppShell({ children }) {
             <button
               type="button"
               onClick={() =>
-                setTheme((resolvedTheme || theme) === "dark" ? "light" : "dark")
+                setTheme((resolvedTheme || theme) === 'dark' ? 'light' : 'dark')
               }
               className="border-b-2 border-transparent px-1 py-1.5 text-sm font-semibold text-muted-foreground transition hover:border-border hover:text-foreground"
               aria-label="Toggle theme"
               title="Toggle theme"
             >
-              {(resolvedTheme || theme) === "dark" ? (
+              {(resolvedTheme || theme) === 'dark' ? (
                 <Sun className="h-4 w-4" />
               ) : (
                 <Moon className="h-4 w-4" />
@@ -165,5 +166,5 @@ export default function AppShell({ children }) {
         {children}
       </main>
     </div>
-  );
+  )
 }

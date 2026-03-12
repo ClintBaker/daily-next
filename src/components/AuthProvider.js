@@ -1,18 +1,18 @@
-"use client";
+'use client'
 
-import { Auth0Provider } from "@auth0/auth0-react";
-import { ThemeProvider } from "next-themes";
+import { Auth0Provider } from '@auth0/auth0-react'
+import { ThemeProvider } from 'next-themes'
 
 export default function AuthProvider({ children }) {
-  const domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN;
-  const clientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID;
+  const domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN
+  const clientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID
 
   if (!domain || !clientId) {
     return (
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         {children}
       </ThemeProvider>
-    );
+    )
   }
 
   return (
@@ -21,7 +21,8 @@ export default function AuthProvider({ children }) {
         domain={domain}
         clientId={clientId}
         authorizationParams={{
-          redirect_uri: typeof window !== "undefined" ? window.location.origin : undefined,
+          redirect_uri:
+            typeof window !== 'undefined' ? window.location.origin : undefined,
         }}
         cacheLocation="localstorage"
         useRefreshTokens
@@ -29,5 +30,5 @@ export default function AuthProvider({ children }) {
         {children}
       </Auth0Provider>
     </ThemeProvider>
-  );
+  )
 }
